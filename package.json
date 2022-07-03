@@ -1,0 +1,35 @@
+{
+  "name": "gopool",
+  "version": "0.0.12",
+  "main": "cjs/index.js",
+  "private": false,
+  "types": "lib/index.ts",
+  "description": "利用线程池执行您的 Nodejs",
+  "keywords": [
+    "nodejs",
+    "pool"
+  ],
+  "scripts": {
+    "serve": "bike lib/serve.ts serve.js",
+    "index": "bike lib/index.ts cjs/index.js",
+    "build": "npm run index && npm run serve"
+  },
+  "dependencies": {
+    "up-dir-env": "workspace:*",
+    "fastify": "^4.0.3",
+    "piscina": "^3.2.0",
+    "source-map-support": "^0.5.21",
+    "tinypool": "^0.2.1"
+  },
+  "bin": {
+    "gopool": "bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ymzuiku/gopool.git"
+  },
+  "bugs": {
+    "url": "git+https://github.com/ymzuiku/gopool.git"
+  },
+  "homepage": "git+https://github.com/ymzuiku/gopool.git"
+}
