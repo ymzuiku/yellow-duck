@@ -27,8 +27,6 @@ gopool 基于 `fastify` 和 `piscina`.
 
 ### 简单请求
 
-对于极简的请求，事件轮训是最高效的，Cluster 、worker_threads 都有一定的分流开销
-
 | 方案                     | QPS   | MEM    |
 | ------------------------ | ----- | ------ |
 | node index.js            | 22889 | 70 MB  |
@@ -36,8 +34,6 @@ gopool 基于 `fastify` 和 `piscina`.
 | gopool worker.js         | 14651 | 130 MB |
 
 ### 查询数据库，I/O 密集型
-
-从一个小表中查询几条数据
 
 | 方案                     | QPS  | MEM    |
 | ------------------------ | ---- | ------ |
@@ -47,7 +43,7 @@ gopool 基于 `fastify` 和 `piscina`.
 
 ### I/O 密集型 + CPU 密集型
 
-在每个请求中都进行一次 fibonacci(30) 的计算，此时单个 nodejs 无法发挥多核的优势，性能最差
+在每个请求中都进行一次 fibonacci(30) 的计算
 
 | 方案                     | QPS  | MEM                        |
 | ------------------------ | ---- | -------------------------- |
@@ -55,8 +51,11 @@ gopool 基于 `fastify` 和 `piscina`.
 | pm2 start index.js -i 10 | 1584 | 请求中 720 MB, 空闲 650 MB |
 | gopool worker.js         | 1454 | 请求中 250 MB, 空闲 160MB  |
 
+我们可以看到，对于纯 I/O 密集型的任务，事件轮训是最高效的，Cluster 、worker_threads 都有一定的分流开销，而要兼顾一定的计算性能，使用 worker_threads 是可以接受的，关键是 worker_threads 使用体验。
+
 ## 约定
 
+- 路由层由 gopool 管控
 - gopool 启动时会使用 `dotenv` 从执行目录开始向上查找 `.env` 文件，并且在每个 worker 启动时会传递 env 对象，这是为了减少 worker 不必要的 env 读取行为
 - gopool 执行的所有模块均为 cjs 类型的文件
 
@@ -75,6 +74,7 @@ const world = (body: any) => {
   return { ...body };
 };
 
+// 向 gopool 注册好路由
 gopool.get("/v1/hello", hello);
 gopool.post("/v1/world", world);
 
@@ -84,6 +84,7 @@ gopool.beforeAll = async () => {
   console.log(res);
 };
 
+// 导出 gopool 对象，gopoolServe 会接管路由，并且匹配多线程任务
 module.exports = gopool;
 ```
 
