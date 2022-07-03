@@ -1,6 +1,6 @@
 {
   "name": "gopool",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "main": "cjs/index.js",
   "private": false,
   "types": "lib/index.ts",
@@ -15,10 +15,8 @@
     "build": "npm run index && npm run serve"
   },
   "dependencies": {
-    "up-dir-env": "workspace:*",
     "fastify": "^4.0.3",
     "piscina": "^3.2.0",
-    "source-map-support": "^0.5.21",
     "tinypool": "^0.2.1"
   },
   "bin": {

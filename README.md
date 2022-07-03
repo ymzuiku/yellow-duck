@@ -56,8 +56,6 @@ gopool 基于 `fastify` 和 `piscina`.
 ## 约定
 
 - 路由层由 gopool 管控
-- gopool 启动时会使用 `dotenv` 从执行目录开始向上查找 `.env` 文件，并且在每个 worker 启动时会传递 env 对象，这是为了减少 worker 不必要的 env 读取行为
-- gopool 执行的所有模块均为 cjs 类型的文件
 
 ## 使用
 
@@ -65,26 +63,40 @@ gopool 基于 `fastify` 和 `piscina`.
 
 ```js
 const { gopool } = require("gopool");
+const { config } = require("dotenv");
 
-const hello = async (body: any) => {
+const hello = async (body, ctx) => {
   return { ...body };
 };
 
-const world = (body: any) => {
+const world = (body, ctx) => {
   return { ...body };
 };
 
-// 向 gopool 注册好路由
+// 向 gopool 注册路由, 这些路由会以多线程的模式派发任务
 gopool.get("/v1/hello", hello);
 gopool.post("/v1/world", world);
 
-// 在启动服务之前的钩子
-gopool.beforeAll = async () => {
-  const res = await fetch("http://someting");
-  console.log(res);
+
+// 在master所有路由注册完之后，在master启动服务
+gopool.onMaster = ({app, ctx}) => {
+  // env环境变量会由master传递给每个线程
+  config();
+  // 耗时的初始化请在master进行, 基础对象可以绑定在 ctx 上，ctx会传递给每个线程
+  ctx.somebody = {
+    hello:"world"
+  };
+
+  // 此任务由master响应
+  app.get("/master/ping", (req) => {
+    return { query: req.query };
+  });
+  console.log(`listen: http://${host}:${port}`);
+  await app.listen({ port, host });
 };
 
-// 导出 gopool 对象，gopoolServe 会接管路由，并且匹配多线程任务
+// 最后需要导出 gopool 对象
+// gopoolServe 会接管路由，并且匹配多线程任务
 module.exports = gopool;
 ```
 
@@ -102,18 +114,6 @@ npm i gopool --save
 npx gopool worker.js
 ```
 
-默认配置如下：
-
-```sh
-npx gopool worker.js --host=127.0.0.1 --port=3800 --timeout=10000
-```
-
-查看服务器状态, 启动后访问: `http://localhost:3800/gopool` :
-
-```sh
-npx gopool worker.js --info-url='/gopool'
-```
-
 ### 通过 PM2 启动
 
 安装到全局：
@@ -125,7 +125,7 @@ npm i -g gopool
 仅使用 PM2 作为守护进程，仅启动 1 个任务：
 
 ```sh
-pm2 start gopool -- dist/worker.js --port=8200 --info-url=/gopool
+pm2 start gopool -- dist/worker.js
 ```
 
 ### 直接使用 Node 命令启动
@@ -138,9 +138,6 @@ const { gopoolServe } = require("gopool/serve.js");
 
 gopoolServe({
   filename: path.resolve(__dirname, "./worker.js"),
-  host: "127.0.0.1",
-  port: 3800,
-  infoUrl: "/gopool",
 });
 ```
 
@@ -150,19 +147,40 @@ gopoolServe({
 node index.js
 ```
 
+### 降级到单线程模式
+
+可以通过取消导出 gopool, 改用 startInWorker 的方式, 改为传统单线程的运行方式。
+
+修改 worker.js
+
+```js
+// 保持上面原有代码
+
+// 取消导出 gopool
+// module.exports = gopool;
+const fastify = require("fastify");
+const app = fastify();
+
+gopool.startInWorker(app);
+```
+
+直接使用 node 执行
+
+```sh
+node worker.js
+```
+
 ## API
 
 CLI API
 
-| 参数          | 说明                   | 默认值              |
-| ------------- | ---------------------- | ------------------- |
-| --host        |                        | "127.0.0.1"         |
-| --port        |                        | 3800                |
-| --info-url    | 启动一个查看负载的接口 | ""                  |
-| --timeout     | 每个任务的超时时间     | 10000               |
-| --min-threads | 保留的最小线程数       | 0                   |
-| --max-threads | 保留的最大线程数       | cups.length         |
-| --max-queue   | 等执行的最大任务数     | cups.length \* 1000 |
+| 参数           | 说明                     | 默认值              |
+| -------------- | ------------------------ | ------------------- |
+| --timeout      | 每个任务的超时时间       | 10000               |
+| --min-threads  | 保留的最小线程数         | 0                   |
+| --max-threads  | 保留的最大线程数         | cups.length         |
+| --max-queue    | 等执行的最大任务数       | cups.length \* 1000 |
+| --idle-timeout | 任务结束后线程保留的时间 | 15000               |
 
 ---
 
@@ -170,13 +188,12 @@ CLI API
 
 ```ts
 interface Options {
-  host: string;
-  port: number;
   filename: string;
   infoUrl?: string;
   timeout?: number;
   minThreads?: number;
   maxThreads?: number;
   maxQueue?: number;
+  idleTimeout?: number;
 }
 ```
