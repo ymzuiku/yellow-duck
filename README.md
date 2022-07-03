@@ -65,11 +65,11 @@ gopool 基于 `fastify` 和 `piscina`.
 const { gopool } = require("gopool");
 const { config } = require("dotenv");
 
-const hello = async (body, ctx) => {
+const hello = async ({body, ctx}) => {
   return { ...body };
 };
 
-const world = (body, ctx) => {
+const world = ({body, ctx}) => {
   return { ...body };
 };
 
@@ -82,7 +82,9 @@ gopool.post("/v1/world", world);
 gopool.onMaster = ({app, ctx}) => {
   // env环境变量会由master传递给每个线程
   config();
-  // 耗时的初始化请在master进行, 基础对象可以绑定在 ctx 上，ctx会传递给每个线程
+
+  // 耗时的初始化请在master进行, 可以绑定在 ctx 上，ctx会传递给每个线程
+  // 注意不可绑定函数对象至 ctx 中
   ctx.somebody = {
     hello:"world"
   };
@@ -145,6 +147,23 @@ gopoolServe({
 
 ```sh
 node index.js
+```
+
+## 获取 headers
+
+由于需要跨线程通讯，headers 尽可能仅传递必要的信息，所以 gopool 提供了一个 headersGetter 的方法
+
+```ts
+gopool.headerGetter = (headers) => {
+  // 挑选必要的header
+  return {
+    "user-agent": headers["user-agent"],
+  };
+};
+
+gopool.get("/v1/hello", async ({ headers }) => {
+  return { hello: Date.now(), headers };
+});
 ```
 
 ### 降级到单线程模式

@@ -32,7 +32,7 @@ export const gopoolServe = async ({
       idleTimeout: idleTimeout,
       minThreads: minThreads,
       maxThreads: maxThreads,
-      // maxQueue: maxQueue,
+      maxQueue: maxQueue,
       argv: process.argv,
     });
     let target = require(filename);
@@ -41,7 +41,8 @@ export const gopoolServe = async ({
     if (go.onMasterBefroeAll) {
       await Promise.resolve(go.onMasterBefroeAll({ app, ctx, pool }));
     }
-    go.useAllRoute({ app, ctx, pool, timeout });
+    const headerGetter = go.headerGetter;
+    go.useAllRoute({ app, ctx, pool, timeout, headerGetter });
     const onMaster = go.onMaster;
     go = void 0;
     target = void 0;

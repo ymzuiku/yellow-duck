@@ -1,20 +1,29 @@
 import EventEmitter from "events";
 import type { FastifyInstance } from "fastify";
+import type { IncomingHttpHeaders } from "http";
 import type Piscina from "piscina";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const routes = [] as any;
 const handles = {} as any;
 
-export const gopool = async ({ uri, body, ctx }: { uri: string; body: any; ctx: Record<string, any> }) => {
+interface ServiceProps {
+  uri: string;
+  body: any;
+  ctx: Record<string, any>;
+  headers: Record<string, string | number | string[] | undefined>;
+}
+type Service = (props: Omit<ServiceProps, "uri">) => any;
+
+export const gopool = async ({ uri, body, ctx, headers }: ServiceProps) => {
   const handle = handles[uri];
   if (!handle) {
     return Error("Not found uri: " + uri);
   }
-  return await Promise.resolve(handle(body, ctx));
+  return await Promise.resolve(handle({ body, ctx, headers }));
 };
 
-gopool.all = (url: string, service: any) => {
+gopool.all = (url: string, service: Service) => {
   routes.push({
     url,
     method: "ALL",
@@ -22,7 +31,7 @@ gopool.all = (url: string, service: any) => {
   handles["ALL" + url] = service;
 };
 
-gopool.get = (url: string, service: any) => {
+gopool.get = (url: string, service: Service) => {
   routes.push({
     url,
     method: "GET",
@@ -30,7 +39,7 @@ gopool.get = (url: string, service: any) => {
   handles["GET" + url] = service;
 };
 
-gopool.post = (url: string, service: any) => {
+gopool.post = (url: string, service: Service) => {
   routes.push({
     url,
     method: "POST",
@@ -38,7 +47,7 @@ gopool.post = (url: string, service: any) => {
   handles["POST" + url] = service;
 };
 
-gopool.put = (url: string, service: any) => {
+gopool.put = (url: string, service: Service) => {
   routes.push({
     url,
     method: "PUT",
@@ -46,7 +55,7 @@ gopool.put = (url: string, service: any) => {
   handles["PUT" + url] = service;
 };
 
-gopool.delete = (url: string, service: any) => {
+gopool.delete = (url: string, service: Service) => {
   routes.push({
     url,
     method: "DELETE",
@@ -54,7 +63,7 @@ gopool.delete = (url: string, service: any) => {
   handles["DELETE" + url] = service;
 };
 
-gopool.options = (url: string, service: any) => {
+gopool.options = (url: string, service: Service) => {
   routes.push({
     url,
     method: "OPTIONS",
@@ -62,27 +71,49 @@ gopool.options = (url: string, service: any) => {
   handles["OPTIONS" + url] = service;
 };
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+gopool.headerGetter = (headers: IncomingHttpHeaders): Record<string, string | number | string[] | undefined> => {
+  return {};
+};
+
 type OnMasterProps = { app: FastifyInstance; ctx: Record<string, any>; pool: Piscina };
 type OnMaster = (props: OnMasterProps) => any;
 gopool.onMasterBefroeAll = void 0 as never as OnMaster;
 gopool.onMaster = void 0 as never as OnMaster;
 
-gopool.useAllRoute = ({ app, pool, ctx, timeout }: OnMasterProps & { timeout: number }) => {
+gopool.useAllRoute = ({
+  app,
+  pool,
+  ctx,
+  timeout,
+  headerGetter,
+}: OnMasterProps & { timeout: number; headerGetter: any }) => {
   routes.forEach((ro: any) => {
     if (ro.method === "GET") {
-      app.get(ro.url, async ({ query }: { query: any }) => {
+      app.get(ro.url, async ({ query, headers }) => {
         const ee = new EventEmitter();
         const t = setTimeout(() => {
           ee.emit("abort");
         }, timeout);
-        const result = await pool.run({ uri: ro.method + ro.url, body: query, ctx }, { signal: ee });
+        const result = await pool.run(
+          { uri: ro.method + ro.url, body: query, ctx, headers: headerGetter(headers) },
+          { signal: ee },
+        );
         clearTimeout(t);
 
         return result;
       });
     } else {
-      (app as any)[ro.method.toLocaleLowerCase()](ro.url, async ({ body }: { body: any }) => {
-        const result = await pool.run({ uri: ro.method + ro.url, body: JSON.parse(body as never), ctx });
+      (app as any)[ro.method.toLocaleLowerCase()](ro.url, async ({ body, headers }: any) => {
+        const ee = new EventEmitter();
+        const t = setTimeout(() => {
+          ee.emit("abort");
+        }, timeout);
+        const result = await pool.run(
+          { uri: ro.method + ro.url, body: JSON.parse(body as never), ctx, headers: headerGetter(headers) },
+          { signal: ee },
+        );
+        clearTimeout(t);
         return result;
       });
     }
@@ -97,14 +128,24 @@ gopool.startInWorker = async (app: FastifyInstance) => {
   }
   routes.forEach((ro: any) => {
     if (ro.method === "GET") {
-      app.get(ro.url, async ({ query }: { query: any }) => {
-        const result = await gopool({ uri: ro.method + ro.url, body: query, ctx });
+      app.get(ro.url, async ({ query, headers }) => {
+        const result = await gopool({
+          uri: ro.method + ro.url,
+          body: query,
+          ctx,
+          headers: gopool.headerGetter(headers),
+        });
 
         return result;
       });
     } else {
-      (app as any)[ro.method.toLocaleLowerCase()](ro.url, async ({ body }: { body: any }) => {
-        const result = await gopool({ uri: ro.method + ro.url, body: JSON.parse(body as never), ctx });
+      (app as any)[ro.method.toLocaleLowerCase()](ro.url, async ({ body, headers }: any) => {
+        const result = await gopool({
+          uri: ro.method + ro.url,
+          body: JSON.parse(body as never),
+          ctx,
+          headers: gopool.headerGetter(headers),
+        });
         return result;
       });
     }
