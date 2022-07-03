@@ -21,7 +21,7 @@ gopool 基于 `fastify` 和 `piscina`.
 
 诚然，使用事件循环明显比使用线程有着更高的 I/O 性能， 所以使用此方案在纯 I/O 密集任务会有所下降，但是依然保持在一个非常高的水准；而在计算密集型的场景，性能接近于 全量 CPU 的 Cluster 启动。
 
-内存方面，相较启动大量 Cluster，gopool 的内存占用率会大幅度下降，但是相较于仅仅启动一个 nodejs gopool 有两倍的内存开销。
+内存方面，相较启动大量 Cluster，gopool 的内存占用率会大幅度下降；相较于仅启动单一 nodejs， gopool 有两倍的内存开销。
 
 以下是一些测试数据，测试机型: `Apple M1 pro`
 
