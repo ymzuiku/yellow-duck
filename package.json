@@ -1,6 +1,6 @@
 {
   "name": "gopool",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "cjs/index.js",
   "private": false,
   "types": "lib/index.ts",
@@ -16,8 +16,7 @@
   },
   "dependencies": {
     "fastify": "^4.0.3",
-    "piscina": "^3.2.0",
-    "tinypool": "^0.2.1"
+    "piscina": "^3.2.0"
   },
   "bin": {
     "gopool": "bin.js"
@@ -29,5 +28,5 @@
   "bugs": {
     "url": "git+https://github.com/ymzuiku/gopool.git"
   },
-  "homepage": "git+https://github.com/ymzuiku/gopool.git"
+  "homepage": "git+https://github.com/ymzuiku/ggopool.git"
 }

@@ -15,13 +15,17 @@
 - [x] 兼容 I/O 密集和 CPU 密集型的场景
 - [ ] 自带一套极简的性能监控功能(未来目标)
 
+## 约定
+
+- 为了降低 Master 的工作量, 前后端通讯参数仅用 query 和 body
+
 ## Performace
 
 gopool 基于 `fastify` 和 `piscina`.
 
 诚然，使用事件循环明显比使用线程有着更高的 I/O 性能， 所以使用此方案在纯 I/O 密集任务会有所下降，但是依然保持在一个非常高的水准；而在计算密集型的场景，性能接近于 全量 CPU 的 Cluster 启动。
 
-内存方面，相较启动大量 Cluster，gopool 的内存占用率会大幅度下降；相较于仅启动单一 nodejs， gopool 有两倍的内存开销。
+内存方面，相较启动大量 Cluster, gopool 的内存占用率会大幅度下降；相较于仅启动单一 nodejs， gopool 有两倍的内存开销。
 
 以下是一些测试数据，测试机型: `Apple M1 pro`
 
@@ -98,7 +102,7 @@ gopool.onMaster = ({app, ctx}) => {
 };
 
 // 最后需要导出 gopool 对象
-// gopoolServe 会接管路由，并且匹配多线程任务
+// masterServe 会接管路由，并且匹配多线程任务
 module.exports = gopool;
 ```
 
@@ -136,9 +140,9 @@ pm2 start gopool -- dist/worker.js
 
 ```js
 const path = require("path");
-const { gopoolServe } = require("gopool/serve.js");
+const { masterServe } = require("gopool/serve.js");
 
-gopoolServe({
+masterServe({
   filename: path.resolve(__dirname, "./worker.js"),
 });
 ```

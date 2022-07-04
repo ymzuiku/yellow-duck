@@ -17,7 +17,7 @@ interface Options {
 
 const cpus = os.cpus().length;
 
-export const gopoolServe = async ({
+export const masterServe = async ({
   filename,
   timeout = 10000,
   minThreads = 0,
@@ -29,23 +29,29 @@ export const gopoolServe = async ({
     const pool = new Piscina({
       filename,
       env: process.env,
+      execArgv: process.execArgv,
+      argv: process.argv,
       idleTimeout: idleTimeout,
       minThreads: minThreads,
       maxThreads: maxThreads,
       maxQueue: maxQueue,
-      argv: process.argv,
     });
-    let target = require(filename);
-    let go = target.default || target;
     const ctx: Record<string, any> = {};
-    if (go.onMasterBefroeAll) {
-      await Promise.resolve(go.onMasterBefroeAll({ app, ctx, pool }));
-    }
-    const headerGetter = go.headerGetter;
-    go.useAllRoute({ app, ctx, pool, timeout, headerGetter });
-    const onMaster = go.onMaster;
-    go = void 0;
-    target = void 0;
+
+    let onMaster: any;
+    await (async function () {
+      let worker = require(filename);
+      let target = worker.default || worker;
+
+      if (target.onMasterBefroeAll) {
+        await Promise.resolve(target.onMasterBefroeAll({ app, ctx, pool }));
+      }
+      const headerGetter = target.headerGetter;
+      target.useAllRoute({ app, ctx, pool, timeout, headerGetter });
+      onMaster = target.onMaster;
+      target = void 0;
+      worker = void 0;
+    })();
 
     if (onMaster) {
       await Promise.resolve(onMaster({ app, ctx, pool }));

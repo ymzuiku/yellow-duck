@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const path = require("path");
-const { gopoolServe } = require("./serve");
+const { masterServe } = require("./serve");
 const argv = process.argv.splice(2);
 
 let timeout = 10000;
@@ -56,4 +56,4 @@ Object.keys(opt).forEach((k) => {
   }
 });
 
-gopoolServe(input);
+masterServe(input);
