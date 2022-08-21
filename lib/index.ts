@@ -3,9 +3,9 @@ import { handles, routes } from "./cache";
 import { runner } from "./runner";
 import type { OnMaster, Options, Service, ServiceProps } from "./types";
 
-export const gopool = async ({ uri, body, headers }: ServiceProps) => {
+export const yellowDuck = async ({ uri, body, headers }: ServiceProps) => {
   // 如果是worker, 清理 onMaster 对象
-  gopool.onMaster = null;
+  yellowDuck.onMaster = null;
   const handle = handles[uri];
   if (!handle) {
     return Error("Not found uri: " + uri);
@@ -13,7 +13,7 @@ export const gopool = async ({ uri, body, headers }: ServiceProps) => {
   return await Promise.resolve(handle({ body, headers }));
 };
 
-gopool.all = (url: string, service: Service) => {
+yellowDuck.all = (url: string, service: Service) => {
   routes.push({
     url,
     method: "ALL",
@@ -21,7 +21,7 @@ gopool.all = (url: string, service: Service) => {
   handles["ALL" + url] = service;
 };
 
-gopool.get = (url: string, service: Service) => {
+yellowDuck.get = (url: string, service: Service) => {
   routes.push({
     url,
     method: "GET",
@@ -29,7 +29,7 @@ gopool.get = (url: string, service: Service) => {
   handles["GET" + url] = service;
 };
 
-gopool.post = (url: string, service: Service) => {
+yellowDuck.post = (url: string, service: Service) => {
   routes.push({
     url,
     method: "POST",
@@ -37,7 +37,7 @@ gopool.post = (url: string, service: Service) => {
   handles["POST" + url] = service;
 };
 
-gopool.put = (url: string, service: Service) => {
+yellowDuck.put = (url: string, service: Service) => {
   routes.push({
     url,
     method: "PUT",
@@ -45,7 +45,7 @@ gopool.put = (url: string, service: Service) => {
   handles["PUT" + url] = service;
 };
 
-gopool.patch = (url: string, service: Service) => {
+yellowDuck.patch = (url: string, service: Service) => {
   routes.push({
     url,
     method: "PATCH",
@@ -53,7 +53,7 @@ gopool.patch = (url: string, service: Service) => {
   handles["PATCH" + url] = service;
 };
 
-gopool.delete = (url: string, service: Service) => {
+yellowDuck.delete = (url: string, service: Service) => {
   routes.push({
     url,
     method: "DELETE",
@@ -61,7 +61,7 @@ gopool.delete = (url: string, service: Service) => {
   handles["DELETE" + url] = service;
 };
 
-gopool.options = (url: string, service: Service) => {
+yellowDuck.options = (url: string, service: Service) => {
   routes.push({
     url,
     method: "OPTIONS",
@@ -70,18 +70,18 @@ gopool.options = (url: string, service: Service) => {
 };
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-gopool.headerGetter = (
+yellowDuck.headerGetter = (
   headers: IncomingHttpHeaders
 ): Record<string, string | number | string[] | undefined> => {
   return {};
 };
 
-gopool.onMaster = void 0 as never as OnMaster;
+yellowDuck.onMaster = void 0 as never as OnMaster;
 
-gopool.startWithSingle = () => {
-  return runner("single", gopool);
+yellowDuck.startWithSingle = () => {
+  return runner("single", yellowDuck);
 };
 
-gopool.startWithThreadsPool = (options?: Options) => {
-  return runner("threadsPool", gopool, options);
+yellowDuck.startWithThreadsPool = (options?: Options) => {
+  return runner("threadsPool", yellowDuck, options);
 };

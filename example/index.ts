@@ -1,12 +1,12 @@
-import { gopool } from "../lib";
+import { yellowDuck } from "../lib";
 import { cpuRoute } from "./cpuRoute";
 
-gopool.get("/v1/hello", ({ body }) => {
+yellowDuck.get("/v1/hello", ({ body }) => {
   return { ...body, ee: 111 };
 });
 
 const list = [];
-gopool.get("/v1/err", ({ body }) => {
+yellowDuck.get("/v1/err", ({ body }) => {
   if (Date.now() % 5 != 1) {
     list[10].dog = 20;
     throw "onot";
@@ -14,7 +14,7 @@ gopool.get("/v1/err", ({ body }) => {
   return { ...body, ee: 111 };
 });
 
-gopool.onMaster = async ({ app, pool }) => {
+yellowDuck.onMaster = async ({ app, pool }) => {
   app.get("/v1/cpu", () => {
     return cpuRoute(pool);
   });
@@ -22,6 +22,6 @@ gopool.onMaster = async ({ app, pool }) => {
   await app.listen({ port: 6100 });
 };
 
-gopool.startWithThreadsPool();
+yellowDuck.startWithThreadsPool();
 
-export default gopool;
+export default yellowDuck;

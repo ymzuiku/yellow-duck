@@ -3,7 +3,7 @@ import { useAllRoute } from "./useAllRoute";
 
 export const runner = async (
   type: "single" | "threadsPool",
-  gopool: any,
+  yellowDuck: any,
   {
     timeout = 10000,
     minThreads = 0,
@@ -13,7 +13,7 @@ export const runner = async (
   }: Options = {}
 ) => {
   await new Promise((res) => setTimeout(res, 200));
-  if (!gopool.onMaster) {
+  if (!yellowDuck.onMaster) {
     return;
   }
   const cluster = require("node:cluster");
@@ -53,21 +53,21 @@ export const runner = async (
       });
 
       await (async function () {
-        const headerGetter = gopool.headerGetter;
+        const headerGetter = yellowDuck.headerGetter;
         useAllRoute({ app, pool, timeout, headerGetter });
       })();
 
-      await Promise.resolve(gopool.onMaster({ app, pool }));
+      await Promise.resolve(yellowDuck.onMaster({ app, pool }));
     } catch (err) {
       console.error(err);
       app.log.error(err);
     }
   } else {
     await (async function () {
-      const headerGetter = gopool.headerGetter;
+      const headerGetter = yellowDuck.headerGetter;
       useAllRoute({ app, pool: null, timeout, headerGetter });
     })();
 
-    await Promise.resolve(gopool.onMaster({ app, pool: null }));
+    await Promise.resolve(yellowDuck.onMaster({ app, pool: null }));
   }
 };

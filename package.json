@@ -1,10 +1,10 @@
 {
-  "name": "gopool",
-  "version": "0.2.0",
+  "name": "yellow-duck",
+  "version": "0.0.1",
   "main": "cjs/index.js",
   "private": false,
   "types": "lib/index.ts",
-  "description": "利用线程池执行您的 Nodejs",
+  "description": "🐤 利用线程池执行您的 Nodejs",
   "keywords": [
     "nodejs",
     "pool"
@@ -17,15 +17,12 @@
     "fastify": "^4.5.2",
     "piscina": "^3.2.0"
   },
-  "bin": {
-    "gopool": "bin.js"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ymzuiku/gopool.git"
+    "url": "git+https://github.com/ymzuiku/yellow-duck.git"
   },
   "bugs": {
-    "url": "git+https://github.com/ymzuiku/gopool.git"
+    "url": "git+https://github.com/ymzuiku/yellow-duck.git"
   },
-  "homepage": "git+https://github.com/ymzuiku/ggopool.git"
+  "homepage": "git+https://github.com/ymzuiku/yellow-duck.git"
 }
