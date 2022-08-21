@@ -1,6 +1,6 @@
 {
   "name": "gopool",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "main": "cjs/index.js",
   "private": false,
   "types": "lib/index.ts",
@@ -10,12 +10,11 @@
     "pool"
   ],
   "scripts": {
-    "serve": "bike lib/serve.ts serve.js",
-    "index": "bike lib/index.ts cjs/index.js",
-    "build": "npm run index && npm run serve"
+    "example": "bike example/index.ts dist/index.js --dev",
+    "build": "bike lib/index.ts cjs/index.js"
   },
   "dependencies": {
-    "fastify": "^4.0.3",
+    "fastify": "^4.5.2",
     "piscina": "^3.2.0"
   },
   "bin": {
