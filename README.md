@@ -24,15 +24,18 @@
 
 ```text
 +--------+     +--------+     +--------------------+
-| daemon | --> | master | --> | threads-worker x n |
+| daemon | --> | master | --> | worker threads x n |
 +--------+     +--------+     +--------------------+
 ```
 
 - deamon 是主进程, 它做的仅仅是守护 master 进程, 确保如果 master 消亡会进行重启
 - master 是多线程的管家, 它也是整个程序的对外的接口, 使用 fastify 进行路由注册和管理, 使用 piscina 进行多线程工作派发
-- threads-worker 根据任务量自动伸缩的线程, 我们的 99%的代码都在此.
+- worker threads 根据任务量自动伸缩的线程, 我们的 99%的代码都在此.
 
-注意: **由于 nodejs 多线程的加载方式限制, 您所有代码的应该为惰性函数, 即加载时不应该被执行**
+## 缺点
+
+- 为了更好的 worker-threas 任务派发的性能, 您所有代码的应该为惰性函数, 即加载 worker 时不应该被执行.
+- 任务返回的对象暂时不支持 stream, 未来可能可以使用 [thread-stream](https://github.com/pinojs/thread-stream) 支持此类功能, 但是现在它还太早了.
 
 ## Performace
 
@@ -102,7 +105,8 @@ yellowDuck.post("/v1/world", ({body, ctx}) => {
   return { ...body };
 });
 
-// 在master所有路由注册完之后，在master启动服务
+
+// onMaster 的代码都仅仅会在 master 中执行, 比如启动 fastify 程序:
 yellowDuck.onMaster = ({app, ctx}) => {
   // env环境变量会由master传递给每个线程
   config();
@@ -117,8 +121,10 @@ yellowDuck.onMaster = ({app, ctx}) => {
   app.get("/master/ping", (req) => {
     return { query: req.query };
   });
-  console.log(`listen: http://${host}:${port}`);
-  await app.listen({ port, host });
+
+  console.log("listen: http://127.0.0.1:3000");
+  // 启动您的 fastify 程序
+  await app.listen({ port:3000 });
 };
 
 // 使用多线程启动服务

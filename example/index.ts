@@ -1,8 +1,19 @@
+import fs from "node:fs";
 import { yellowDuck } from "../lib";
 import { cpuRoute } from "./cpuRoute";
 
 yellowDuck.get("/v1/hello", ({ body }) => {
   return { ...body, ee: 111 };
+});
+
+yellowDuck.get("/v1/file", ({ body }) => {
+  const pkg = fs.readFileSync("big.file");
+  return String(pkg);
+});
+
+yellowDuck.get("/v1/pipe", ({ body }) => {
+  return fs.createReadStream("./big.file");
+  // return { kind: "stream", key: "fs.createReadStream", args: "./big.file" };
 });
 
 const list = [];
@@ -23,5 +34,6 @@ yellowDuck.onMaster = async ({ app, pool }) => {
 };
 
 yellowDuck.startWithThreadsPool();
+// yellowDuck.startWithSingle();
 
 export default yellowDuck;

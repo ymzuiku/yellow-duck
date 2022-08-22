@@ -23,8 +23,10 @@ export const runner = async (
       console.log(`worker ${worker.process.pid} died`);
       cluster.fork();
     });
+    console.log("daemon pid:", process.pid);
     return;
   }
+  console.log("master pid:", process.pid);
   const fastify = require("fastify");
   const os = require("node:os");
   let cpus = os.cpus().length - 1;
