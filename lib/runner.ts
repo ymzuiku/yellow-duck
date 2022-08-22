@@ -20,7 +20,9 @@ export const runner = async (
   if (cluster.isPrimary) {
     cluster.fork();
     cluster.on("exit", (worker, code, signal) => {
-      console.log(`worker ${worker.process.pid} died`);
+      console.log(
+        `worker ${worker.process.pid} died, code: ${code}, signal:${signal}`
+      );
       cluster.fork();
     });
     console.log("daemon pid:", process.pid);

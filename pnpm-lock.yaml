@@ -2,10 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   fastify: ^4.5.2
+  generic-pool: ^3.8.2
   piscina: ^3.2.0
 
 dependencies:
   fastify: 4.5.2
+  generic-pool: 3.8.2
   piscina: 3.2.0
 
 packages:
@@ -175,6 +177,11 @@ packages:
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /generic-pool/3.8.2:
+    resolution: {integrity: sha512-nGToKy6p3PAbYQ7p1UlWl6vSPwfwU6TMSWK7TTu+WUY4ZjyZQGniGGt2oNVvyNSpyZYSB43zMXVLcBm08MTMkg==}
+    engines: {node: '>= 4'}
     dev: false
 
   /hdr-histogram-js/2.0.3:

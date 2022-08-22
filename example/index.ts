@@ -3,7 +3,7 @@ import { yellowDuck } from "../lib";
 import { cpuRoute } from "./cpuRoute";
 
 yellowDuck.get("/v1/hello", ({ body }) => {
-  return { ...body, ee: 111 };
+  return { dog: 111 };
 });
 
 yellowDuck.get("/v1/file", ({ body }) => {
@@ -33,7 +33,7 @@ yellowDuck.onMaster = async ({ app, pool }) => {
   await app.listen({ port: 6100 });
 };
 
-yellowDuck.startWithThreadsPool();
-// yellowDuck.startWithSingle();
+// yellowDuck.startWithThreadsPool();
+yellowDuck.startWithSingle();
 
 export default yellowDuck;
