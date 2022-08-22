@@ -61,8 +61,8 @@ yellowDuck 基于 `fastify` 和 `piscina`.
 
 | 方案                     | QPS   | MEM    |
 | ------------------------ | ----- | ------ |
-| node index.js            | 22889 | 70 MB  |
-| pm2 start index.js -i 10 | 20844 | 650 MB |
+| node index.js            | 97226 | 70 MB  |
+| pm2 start index.js -i 10 | 97145 | 650 MB |
 | node yellowDuck.js       | 14651 | 130 MB |
 
 ### 查询数据库，I/O 密集型
@@ -70,18 +70,19 @@ yellowDuck 基于 `fastify` 和 `piscina`.
 | 方案                     | QPS  | MEM    |
 | ------------------------ | ---- | ------ |
 | node index.js            | 6718 | 70 MB  |
-| pm2 start index.js -i 10 | 4994 | 650 MB |
+| pm2 start index.js -i 10 | 6818 | 650 MB |
 | node yellowDuck.js       | 6519 | 160 MB |
 
 ### I/O 密集型 + CPU 密集型
 
 在每个请求中都进行一次 fibonacci(30) 的计算
 
-| 方案                     | QPS  | MEM                        |
-| ------------------------ | ---- | -------------------------- |
-| node index.js            | 205  | 70 MB                      |
-| pm2 start index.js -i 10 | 1584 | 请求中 720 MB, 空闲 650 MB |
-| node yellowDuck.js       | 1454 | 请求中 250 MB, 空闲 160MB  |
+| 方案                     | QPS  | MEM                        | CPU  |
+| ------------------------ | ---- | -------------------------- | ---- |
+| node index.js            | 186  | 70 MB                      | 100% |
+| pm2 start index.js -i 10 | 1432 | 请求中 720 MB, 空闲 540 MB | 850% |
+| node yellowDuck.js       | 1318 | 请求中 220 MB, 空闲 54MB   | 820% |
+| golang - gin             | 3096 | 请求中 134 MB, 空闲 21MB   | 900% |
 
 我们可以看到，对于纯 I/O 密集型的任务，事件轮训是最高效的，Cluster 、worker_threads 都有一定的分流开销，而要兼顾一定的计算性能，使用 worker_threads 是可以接受的。
 

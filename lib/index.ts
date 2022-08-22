@@ -10,6 +10,11 @@ export const yellowDuck = async ({ uri, body, headers }: ServiceProps) => {
   if (!handle) {
     return Error("Not found uri: " + uri);
   }
+  // try {
+  //   return await Promise.resolve(handle({ body, headers }));
+  // } catch (err) {
+  //   return err;
+  // }
   return await Promise.resolve(handle({ body, headers }));
 };
 

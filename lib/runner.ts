@@ -8,7 +8,6 @@ export const runner = async (
     timeout = 10000,
     minThreads = 0,
     maxThreads,
-    maxQueue,
     idleTimeout = 5000,
   }: Options = {}
 ) => {
@@ -38,9 +37,7 @@ export const runner = async (
   if (!maxThreads) {
     maxThreads = cpus;
   }
-  if (!maxQueue) {
-    maxQueue = cpus * 2500;
-  }
+
   const app = fastify();
   if (type === "threadsPool") {
     const Piscina = require("piscina");
@@ -53,7 +50,6 @@ export const runner = async (
         idleTimeout: idleTimeout,
         minThreads: minThreads,
         maxThreads: maxThreads,
-        maxQueue: maxQueue,
       });
 
       await (async function () {

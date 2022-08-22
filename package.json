@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "example": "bike example/index.ts dist/index.js --dev",
+    "example2": "bike example2/index.ts dist/index2.js --dev",
     "build": "bike lib/index.ts cjs/index.js"
   },
   "dependencies": {
